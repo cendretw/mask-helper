@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>個資遮蔽工作台 - PDF 與圖片打碼</title>
+  <style>
+    body { margin: 0; font-family: "Microsoft JhengHei", sans-serif; background: #2c2c2c; color: white; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    .toolbar { background: #1e1e1e; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; border-bottom: 1px solid #444; z-index: 10; }
+    .toolbar select, .toolbar button { padding: 8px 12px; border-radius: 5px; font-size: 13px; border: none; cursor: pointer; }
+    .toolbar select { background: #333; color: white; border: 1px solid #555; }
+    .btn-upload { background: #0078D7; color: white; font-weight: bold; }
+    .btn-crop { background: #F57C00; color: white; font-weight: bold; }
+    .btn-crop.active { background: #FF3D00; outline: 2px solid #ffeb3b; }
+    .btn-view { background: #424242; color: white; }
+    .btn-view.active { background: #00897B; outline: 2px solid #00f5d4; }
+    .zoom-text { font-size: 13px; font-weight: bold; color: #ccc; min-width: 42px; text-align: center; }
+    .btn-undo { background: #555; color: white; }
+    .btn-png { background: #2E7D32; color: white; font-weight: bold; }
+    .btn-pdf { background: #C62828; color: white; font-weight: bold; }
+    button:hover { opacity: 0.9; }
+
+    .page-bar { background: #383838; padding: 8px 20px; display: none; justify-content: center; align-items: center; gap: 15px; border-bottom: 1px solid #555; z-index: 9; }
+    .page-bar button { background: #0078D7; color: white; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .page-bar button:disabled { background: #666; cursor: not-allowed; }
+
+    .workspace { flex: 1; overflow: auto; display: flex; padding: 20px; position: relative; background: #1a1a1a; }
+    .drop-zone { margin: auto; border: 3px dashed #777; border-radius: 12px; padding: 50px 40px; text-align: center; color: #ccc; max-width: 500px; cursor: pointer; }
+    .drop-zone:hover { border-color: #0078D7; background: rgba(0, 120, 215, 0.08); }
+    .drop-zone h2 { color: white; margin-top: 0; }
+
+    .canvas-container { margin: auto; position: relative; display: none; }
+    canvas { background: white; box-shadow: 0 4px 25px rgba(0,0,0,0.65); display: block; transform-origin: top left; cursor: crosshair; }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button type="button" class="btn-upload" id="uploadBtn">📂 開啟 PDF / 圖片</button>
+    <input type="file" id="uploadInput" accept=".pdf,image/*" style="display: none;">
+
+    <button type="button" class="btn-crop" id="cropModeBtn">✂️ 裁切畫面</button>
+
+    <button type="button" class="btn-view" id="panModeBtn" title="按住空白鍵也可移動畫面">🖐️ 移動</button>
+    <button type="button" class="btn-view" id="zoomOutBtn">➖</button>
+    <span class="zoom-text" id="zoomPercent">100%</span>
+    <button type="button" class="btn-view" id="zoomInBtn">➕</button>
+    <button type="button" class="btn-view" id="zoomFitBtn">🔄 適合視窗</button>
+
+    <select id="shapeMode">
+      <option value="rect">⬜ 矩形框（文字/表格）</option>
+      <option value="circle">⭕ 圓形/橢圓框（照片/人臉）</option>
+    </select>
+
+    <select id="toolMode">
+      <option value="mosaic">🟦 真・馬賽克（銷毀像素）</option>
+      <option value="blur">🌫️ 重度毛玻璃霧化</option>
+      <option value="circle">⭕ 智慧底色遮蓋（OOO）</option>
+      <option value="star">✳️ 智慧底色遮蓋（***）</option>
+    </select>
+
+    <button type="button" class="btn-undo" id="undoBtn">↩️ 復原這頁上一步</button>
+    <button type="button" class="btn-png" id="downloadPngBtn">💾 下載本頁 PNG</button>
+    <button type="button" class="btn-pdf" id="downloadPdfBtn">📄 匯出全部為安全 PDF</button>
+  </div>
+
+  <div class="page-bar" id="pageBar">
+    <button type="button" id="prevPageBtn">◀ 上一頁</button>
+    <span id="pageIndicator" style="font-weight: bold; font-size: 14px;">第 1 / 1 頁</span>
+    <button type="button" id="nextPageBtn">下一頁 ▶</button>
+    <span style="font-size: 12px; color: #ffeb3b;">（每頁打碼與裁切都會自動保留）</span>
+  </div>
+
+  <div class="workspace" id="workspace">
+    <div class="drop-zone" id="dropZone">
+      <h2>📄 把 PDF 或圖片拖曳到這裡</h2>
+      <p>或<strong>直接點擊此框框</strong> / 左上角藍色按鈕 <strong>「📂 開啟 PDF / 圖片」</strong></p>
+      <p style="font-size: 13px; color: #aaa; margin-top: 12px;">💡 也可以直接按 <strong>Ctrl + V</strong> 貼上剛複製的螢幕截圖</p>
+    </div>
+    <div class="canvas-container" id="canvasContainer">
+      <canvas id="editorCanvas"></canvas>
+    </div>
+  </div>
+
+  <script src="pdf.min.js"></script>
+  <script src="editor.js"></script>
+</body>
+</html>

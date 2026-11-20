@@ -1,0 +1,25 @@
+
+{
+  "manifest_version": 3,
+  "name": "個資遮蔽小幫手",
+  "version": "3.0",
+  "description": "網頁自動抓個資、多頁 PDF 與圖片圓形/矩形馬賽克打碼工具",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}
